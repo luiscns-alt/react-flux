@@ -49,7 +49,7 @@ function clearAll() {
 const TodoStore = {
   async getAll() {
     if (_todoList.length === 0) {
-      _todoList = await TodoService.getAll();
+      _todoList = await TodoService.list();
     }
     return _todoList;
   },

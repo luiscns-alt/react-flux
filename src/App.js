@@ -1,8 +1,15 @@
 import React, { Component } from "react";
 import "./App.css";
-import { TodoService } from "./data/services/TodoService";
 import Newtodoitem from "./view/components/NewToDoItem";
 import ToDoList from "./view/components/ToDoList";
+import TodoActions from "./data/actions/TodoActions";
+import TodoStore from "./data/store/TodoStore";
+
+async function getTodoState() {
+  return {
+    todoList: await TodoStore.getAll(),
+  };
+}
 
 class App extends Component {
   constructor(props) {
@@ -10,72 +17,35 @@ class App extends Component {
     this.state = {
       todoList: [],
     };
-    this.add = this.add.bind(this);
-    this.remove = this.remove.bind(this);
-    this.update = this.update.bind(this);
-    this.clear = this.clear.bind(this);
+    this._onChange = this._onChange.bind(this);
+    this._onChange();
   }
 
-  async componentDidMount() {
-    const todoList = await TodoService.list();
-    this.setState({ todoList });
+  componentDidMount() {
+    TodoStore.addChangeListener(this._onChange);
+  }
+  componentWillMount() {
+    TodoStore.removerChangeListener(this._onChange);
   }
 
-  clear() {
-    const todo = [],
-      done = [],
-      { todoList } = this.state;
-
-    todoList.forEach((item) => {
-      if (item.isChecked) {
-        done.push(item);
-      } else {
-        todo.push(item);
-      }
-    });
-
-    done.forEach((item) => this.remove(item.id));
-    this.setState({ todoList: todo });
-  }
-
-  add(description) {
-    TodoService.create({ description, isChecked: false }).then((newItem) => {
-      const { todoList } = this.state;
-      todoList.push(newItem);
-      this.setState({ todoList });
-    });
-  }
-
-  remove(id) {
-    const { todoList } = this.state,
-      itemIndex = todoList.findIndex((item) => item.id === id);
-    todoList.splice(itemIndex, 1);
-    TodoService.remove(id);
-    this.setState({ todoList });
-  }
-
-  update(newItem) {
-    const { todoList } = this.state,
-      itemIndex = todoList.findIndex((item) => item.id === newItem.id);
-    todoList[itemIndex] = newItem;
-    TodoService.update(newItem);
-    this.setState({ todoList });
+  async _onChange() {
+    this.setState(await getTodoState());
   }
 
   render() {
     const { state } = this;
     return (
       <div className="App">
-        <Newtodoitem onAdd={this.add} />
+        <Newtodoitem onAdd={TodoActions.create} />
         <hr />
-        <button className="tw-btn" onClick={this.clear}>
+        <button className="tw-btn" onClick={TodoActions.clear}>
           Limpar
         </button>
         <hr />
         <ToDoList
           items={state.todoList}
-          onRemove={this.remove}
-          onUpdate={this.update}
+          onRemove={TodoActions.remove}
+          onUpdate={TodoActions.update}
         />
       </div>
     );
