@@ -1,7 +1,7 @@
 import { ApiService } from "./ApiService";
 const endpoint = "todo";
 
-export const TdoService = {
+export const TodoService = {
   list() {
     return ApiService.get(endpoint);
   },
