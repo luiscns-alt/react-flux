@@ -3,7 +3,17 @@ import React, { Component } from "react";
 class Todoitem extends Component {
   static defaultProps = {
     item: {},
+    onRemove: () => {},
   };
+
+  constructor(props) {
+    super(props);
+    this.remove = this.remove.bind(this);
+  }
+
+  remove() {
+    this.props.onRemove(this.props.item.id);
+  }
   render() {
     const { props } = this,
       item = props.item;
@@ -16,7 +26,9 @@ class Todoitem extends Component {
           disabled={item.checked}
           defaultValue={item.description}
         />
-        <button className="tw-btn">X</button>
+        <button className="tw-btn" onClick={this.remove}>
+          X
+        </button>
       </li>
     );
   }
